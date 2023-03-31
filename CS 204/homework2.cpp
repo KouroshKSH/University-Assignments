@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include "feedback.h"
-#include "feedback.cpp" // comment this line later
 
 using namespace std;
 
@@ -29,19 +28,14 @@ int funcGetListSize(nodePtr head);
 string funcReturnSecretNum(nodePtr list1, nodePtr list2, nodePtr list3);
 int funcFindMissingDigit(nodePtr head);
 
-void part3();
-
 int main()
 {
 	int gameID;
 	cout << "Please enter a game ID.\n"; cin >> gameID;
-
 	// Linked lists for possibles
 	nodePtr linklist1 = nullptr, linklist2 = nullptr, linklist3 = nullptr;
-
 	// Linked lists for impossibles
 	nodePtr linklist4 = nullptr, linklist5 = nullptr, linklist6 = nullptr;
-
 	bool flagCondition = true;
 	while (flagCondition == true)
 	{
@@ -152,15 +146,12 @@ int main()
 			cout << "Slot: 1\n";
 			cout << "Impossibles: "; funcPrintLinkedList(linklist4);
 			cout << "Possibles: "; funcPrintLinkedList(linklist1);
-
 			cout << "\nSlot: 2\n";
 			cout << "Impossibles: "; funcPrintLinkedList(linklist5);
 			cout << "Possibles: "; funcPrintLinkedList(linklist2);
-
 			cout << "\nSlot: 3\n";
 			cout << "Impossibles: "; funcPrintLinkedList(linklist6);
 			cout << "Possibles: "; funcPrintLinkedList(linklist3);
-
 			cout << endl; // needed for correct styling			
 			if (funcGetListSize(linklist4) == 9 && funcGetListSize(linklist5) == 9 && funcGetListSize(linklist6) == 9)
 			{ // the game is over when all 3 impossible lists have 9 digits in them
@@ -263,9 +254,7 @@ void funcFillListExceptNum(int key, nodePtr & head)
 
 void funcDeleteRest(nodePtr & head, int key)
 { // delete the content of a linked list other than a specific number
-	nodePtr current = head;
-    nodePtr prev = NULL;
-
+	nodePtr current = head, prev = NULL;
     while (current != NULL)
 	{ // iterate until reaching the tail
         if (current->digit != key)
@@ -310,36 +299,34 @@ void funcDeleteLinkedList(nodePtr & head)
 
 void funcDeleteOneNode(int value, nodePtr & head)
 { // to delete a single node from the linked list
-	nodePtr toBeDeleted = nullptr, prev = nullptr;
-
+	nodePtr needDelete = nullptr, prev = nullptr;
     // search for the node with the given value
     for (nodePtr current = head; current != nullptr; current = current->next)
 	{
         if (current->digit == value)
 		{
-            toBeDeleted = current;
+            needDelete = current;
             break;
         }
         prev = current;
     }
 
     // delete node if found
-    if (toBeDeleted != nullptr)
+    if (needDelete != nullptr)
 	{
-        if (toBeDeleted == head)
+        if (needDelete == head)
 		{ head = head->next; }
-        else { prev->next = toBeDeleted->next; }
-        delete toBeDeleted;
+        else { prev->next = needDelete->next; }
+        delete needDelete;
     }
 }
 
 nodePtr funcInsertOrderly(nodePtr & head, int newkey)
 { // insert the specific number in a linked list while maintaining ascending order
-    nodePtr  ptr = head;   // loop variable
+    nodePtr  ptr = head, prev = NULL;
     if (head == NULL || newkey <= head->digit) // it's the head
     { return new node(newkey, head); }
 
-    nodePtr prev = NULL; // pointing to the previous node
     while (ptr != NULL && ptr->digit < newkey)
     { // the number can't be placed before something lesser
         prev = ptr;     
@@ -347,7 +334,7 @@ nodePtr funcInsertOrderly(nodePtr & head, int newkey)
     } 
     if (ptr != NULL && ptr->digit == newkey)
 	{ // check if newkey is already present in the list
-        return head; // newkey is already present, so return the current head
+        return head; // return the current head when key is present
     }
     // insert node with newkey
     nodePtr newNode = new node(newkey, ptr);
