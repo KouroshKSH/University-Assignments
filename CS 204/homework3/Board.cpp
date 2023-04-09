@@ -12,11 +12,11 @@ using namespace std;
     04. [x] printBoard
     05. [x] evaluateGame
     06. [x] targetSlotFull
-    07. [ ] destroySlot
+    07. [x] destroySlot
     08. [x] createSlotBegin
     09. [x] createSlotEnd
     10. [x] createEmptySlotEnd
-    11. [ ] clearBoard
+    11. [x] clearBoard
     12. [ ] noMove
 ***/
 
@@ -50,6 +50,7 @@ void Board::movePiece(int choice, int targetInd)
 
 void Board::printBoard() // done
 {
+    //cout << "\nprint board\n";
     cout << endl; // for styling purposes
     string topRow = "", midRow = "", endRow = "", baseCaret = "";
     // develop each row by poping the items of the stacks
@@ -80,12 +81,14 @@ void Board::printBoard() // done
 
 int Board::evaluateGame()
 {
+    int result = -1;
     if (xCnt < oCnt)
-    { return 1; }
-    else if (xCnt > oCnt)
-    { return 2; }
-    else if (xCnt == oCnt)
-    { return 3; }
+    { result = 1; }
+    if (xCnt > oCnt)
+    { result = 2; }
+    if (xCnt == oCnt)
+    { result = 3; }
+    return result;
 }
 
 bool Board::targetSlotFull(int targetInd) // done
@@ -97,23 +100,64 @@ bool Board::targetSlotFull(int targetInd) // done
         targetSlot = targetSlot->next;
         colIdx += 1;
     }
-    return targetSlot->slotStack.isFull();
+    bool result = targetSlot->slotStack.isFull();
+    return result;
 }
 
-void Board::destroySlot(int targetInd)
+void Board::destroySlot(int targetInd) // done?
 {
-    cout << "\ndestroy slot\n";
+    // cout << "\ndestroy slot\n";
+    slot *targetSlot = head;
+    int colIdx = 0;
+
+    // find the target slot
+    while (targetSlot != NULL && colIdx < targetInd)
+    {
+        targetSlot = targetSlot->next;
+        colIdx += 1;
+    }
+
+    // update the piece counts
+    CharStack targetStack = targetSlot->slotStack;
+    while (targetStack.isEmpty() == false)
+    {
+        char piece;
+        targetStack.pop(piece);
+        // update the counter
+        if (piece == 'x')
+        { xCnt -= 1; }
+        else if (piece == 'o')
+        { oCnt -= 1; }
+    }
+
+    if (targetSlot == head)
+    { // the board gets a shift towards left by removing the head
+        head = targetSlot->next;
+        if (head != NULL)
+        { head->prev = NULL; }
+    }
+    else if (targetSlot == tail)
+    { // the board gets a shift towards right by removing the tail
+        tail = targetSlot->prev;
+        tail->next = NULL;
+    }
+    else
+    { // the target column in the middle disappears by not having anything pointed to it
+        targetSlot->prev->next = targetSlot->next;
+        targetSlot->next->prev = targetSlot->prev;
+    }
+
+    // free memory
+    delete targetSlot;
 }
 
 void Board::createSlotBegin(char plyChr, int num) // done
 {
-    //cout << "\ncreate slot begin\n";
     slot *newEndSlot = new slot;
-
     newEndSlot->next = nullptr;
     newEndSlot->prev = tail;
-
     CharStack newEndStack;
+
     for (int i = 0; i < num; i++)
     { newEndStack.push(plyChr); }
 
@@ -155,53 +199,46 @@ void Board::createSlotEnd(char plyChr, int num) // done
 
     newEndSlot->slotStack = newEndStack;
 
-    // If the board is empty, set the head pointer to the new slot
-   if (head == nullptr)
-   {
-      head = newEndSlot;
-   } else { // Otherwise, set the next pointer of the tail slot to the new slot
-      tail->next = newEndSlot;
-   }
+    if (head == nullptr) // the head pointer to the new slot when board is empty
+    { head = newEndSlot; }
+    else
+    { tail->next = newEndSlot; }
+    tail = newEndSlot;
 
-   // Set the tail pointer to the new slot
-   tail = newEndSlot;
-
-   if (plyChr == 'x')
-   {
-       xCnt += num;
-       //cout << "\nx count is: " << xCnt << endl;
-   } else if (plyChr == 'o')
-   {
-       oCnt += num;
-       //cout << "\no count is: " << oCnt << endl;
-   }
+    if (plyChr == 'x')
+    { xCnt += num; }
+    else if (plyChr == 'o')
+    { oCnt += num; }
 }
 
 void Board::createEmptySlotEnd() // done
 {
-   // Create a new slot
    slot *newSlot = new slot;
-
-   // Set the next and prev pointers of the new slot
    newSlot->next = nullptr;
    newSlot->prev = tail;
+   newSlot->slotStack = new CharStack();
 
-   // Set the slot stack of the new slot to be empty
-   newSlot->slotStack = CharStack();
-
-   // If the board is empty, set the head pointer to the new slot
+   // the head pointer is the new slot if board is empty
    if (head == nullptr)
    {
       head = newSlot;
-   } else { // Otherwise, set the next pointer of the tail slot to the new slot
+   } else {
       tail->next = newSlot;
    }
 
-   // Set the tail pointer to the new slot
    tail = newSlot;
 }
 
-void Board::clearBoard()
+void Board::clearBoard() // done
 {
-    cout << "\nclear board\n";   
+    //cout << "\nclear board\n"; 
+    slot *currentSlot = head;
+    char tempChar = ' ';
+    while (currentSlot != NULL)
+    { // traverse all slot from left to right to delete their nodes separately
+        while (currentSlot->slotStack.isEmpty() == false)
+        { currentSlot->slotStack.pop(tempChar); } // deletes from top node to bottom until there is none left
+        currentSlot = currentSlot->next;
+    }
+    xCnt = 0; oCnt = 0; // there are no more X & O's left
 }
