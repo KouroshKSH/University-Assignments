@@ -8,7 +8,7 @@ using namespace std;
     TODO:
     01. [x] Board
     02. [ ] validMove
-    03. [ ] movePiece
+    03. [x] movePiece
     04. [x] printBoard
     05. [x] evaluateGame
     06. [x] targetSlotFull
@@ -96,14 +96,38 @@ int Board::validMove(char plyChr, int choice, int die, int direction)
     return 0;
 }
 
-void Board::movePiece(int choice, int targetInd)
+void Board::movePiece(int originIdx, int targetIdx) // done?
 {
-    cout << "\nmove piece\n";
+    // cout << "\nmove piece\n";
+    slot *originSlot = head, *targetSlot = head;
+    int currentIdx = 0;
+
+    while (originSlot != nullptr && currentIdx < originIdx)
+    { // locate the column that is the source of the move
+        originSlot = originSlot->next;
+        currentIdx += 1;
+    }
+
+    currentIdx = 0; // reset the index for traversal from beginning
+
+    while (targetSlot != nullptr && currentIdx < targetIdx)
+    {
+        targetSlot = targetSlot->next;
+        currentIdx += 1;
+    }
+
+    if (originSlot != nullptr && targetSlot != nullptr)
+    { // both columns exist on the board
+        char currentChar = ' ';
+        if (originSlot->slotStack.pop(currentChar))
+        { // move the player character from the original to the target column via the modified character
+            targetSlot->slotStack.push(currentChar);
+        }
+    }
 }
 
 void Board::printBoard() // done
 {
-    //cout << "\nprint board\n";
     cout << endl; // for styling purposes
     string topRow = "", midRow = "", endRow = "", baseCaret = "";
     // develop each row by poping the items of the stacks
@@ -175,7 +199,7 @@ void Board::destroySlot(int targetInd) // done
         colIdx += 1;
     }
 
-    // update the piece counts
+    // update the piece counts accordingly
     CharStack targetStack = targetSlot->slotStack;
     while (targetStack.isEmpty() == false)
     {
