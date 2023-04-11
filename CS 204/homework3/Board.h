@@ -21,8 +21,8 @@ private:
 
 public:
     Board();
-    bool noMove(char, int);
-    int validMove(char, int, int, int);
+    bool noMove(const char, const int);
+    int validMove(const char, const int, const int, const int);
     void movePiece(int, int);
     void printBoard();
     int evaluateGame();
