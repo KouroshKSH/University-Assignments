@@ -7,7 +7,7 @@ using namespace std;
 /***
     TODO:
     01. [x] Board
-    02. [ ] validMove
+    02. [x] validMove
     03. [x] movePiece
     04. [x] printBoard
     05. [x] evaluateGame
@@ -80,7 +80,7 @@ bool Board::noMove(char plyChr, int die) // done?
                 }
             }
         }
-        currentSlot = currentSlot->next;
+        currentSlot = currentSlot->next; // move on to the rest of the columns
         currentIdx += 1;
     }
     return true; // by default, there are no possible moves
@@ -91,9 +91,99 @@ In Homework 3, validMove function, there are some error codes mentioned.
 If there are errors in both entered slot and target slot indexes, you have to prioritize entered slot index.
 This means first you need to check 1 and 4, and then 2 and 3. 
 ***/ 
-int Board::validMove(char plyChr, int choice, int die, int direction)
-{
-    return 0;
+int Board::validMove(char plyChr, int startIdx, int steps, int direction)
+{   
+    // case 1: entered slot index is not within bounds
+    int boardSize = 0;
+    slot *temp = head;
+    while (temp != nullptr)
+    { // find the number of columns
+        temp = temp->next;
+        boardSize += 1;
+    }
+    if (startIdx < 0 || startIdx >= boardSize)
+    { // the starting index should be in the [0, boardSize) range
+        return 1;
+    }
+
+    // case 4: entered slot index does not belong to the player
+    slot *belonging = head;
+    int currentIdx = 0;
+    while (belonging != nullptr && currentIdx < startIdx)
+    {
+        belonging = belonging->next;
+        currentIdx += 1;
+    }
+    if (belonging != nullptr)
+    {
+        char checkChr = ' '; // get the character for checking validity
+        belonging->slotStack.pop(checkChr);
+        belonging->slotStack.push(checkChr);
+        if (plyChr != checkChr)
+        {
+            return 4;
+        }
+    }
+
+    // case 2: target slot index not within bounds
+    if (direction == 1)
+    {
+        if (startIdx + steps >= boardSize)
+        { // goes out of bounds from the right side
+            return 2;
+        }
+    } else if (direction == 0)
+    {
+        if (startIdx - steps < 0)
+        { // goes out of bounsd from the left side
+            return 2;
+        }
+    }
+
+
+    // case 3: target slot index is not empty AND does not belong to the player
+    if (direction == 1)
+    { // going to right side
+        slot *targetSlot = head;
+        currentIdx = 0;
+        while (targetSlot != nullptr && currentIdx < (startIdx + steps))
+        {
+            targetSlot = targetSlot->next;
+            currentIdx += 1;
+        }
+        if (targetSlot->slotStack.isEmpty() == false)
+        { // the target slot has some piece in it
+            char tempChar = ' ';
+            targetSlot->slotStack.pop(tempChar);
+            targetSlot->slotStack.push(tempChar);
+            if (plyChr != tempChar)
+            {
+                return 3;
+            }
+        }
+    } else if (direction == 0)
+    { // going to left side
+        slot *targetSlot = tail;
+        currentIdx = boardSize - 1;
+        while (targetSlot != nullptr && currentIdx >= (startIdx - steps))
+        {
+            targetSlot = targetSlot->prev;
+            currentIdx -= 1;
+        }
+        if (targetSlot->slotStack.isEmpty() == false)
+        { // the target slot has some piece in it
+            char tempChar = ' ';
+            targetSlot->slotStack.pop(tempChar);
+            targetSlot->slotStack.push(tempChar);
+            if (plyChr != tempChar)
+            {
+                return 3;
+            }
+        }
+    }
+    
+
+    return 0; // the move is valid by default
 }
 
 void Board::movePiece(int originIdx, int targetIdx) // done?
@@ -156,7 +246,7 @@ void Board::printBoard() // done
     cout << topRow << endl << midRow << endl << endRow << endl << baseCaret << endl;
 }
 
-int Board::evaluateGame() const
+int Board::evaluateGame()
 {
     int result = -1;
     if (xCnt < oCnt)
