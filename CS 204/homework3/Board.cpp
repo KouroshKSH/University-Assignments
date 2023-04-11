@@ -22,14 +22,14 @@ using namespace std;
 
 Board::Board() // done
 {
-    cout << "\n Board called.\n";
+    // cout << "\n Board called.\n";
     head = NULL; tail = NULL;
     xCnt = 0; oCnt = 0;
 }
 
 bool Board::noMove(char plyChr, int die) // done?
 { // returns false even if a single possible move is found, otherwise true
-    cout << "\n noMove called.\n";
+    // cout << "\n noMove called.\n";
     slot * currentSlot = head;
     int currentIdx = 0;
 
@@ -88,117 +88,89 @@ bool Board::noMove(char plyChr, int die) // done?
     return true; // by default, there are no possible moves
 }
 
-/***
-In Homework 3, validMove function, there are some error codes mentioned.
-If there are errors in both entered slot and target slot indexes, you have to prioritize entered slot index.
-This means first you need to check 1 and 4, and then 2 and 3. 
-***/ 
-int Board::validMove(char plyChr, int startIdx, int steps, int direction)
-{   
-    // case 1: entered slot index is not within bounds
-    cout << "\n validMove called.\n";
+int Board::validMove(const char plyChr, int startIdx, int steps, int direction)
+{
+    // Find the size of the board
     int boardSize = 0;
-    slot *temp = head;
-    while (temp != NULL)
-    { // find the number of columns
-        temp = temp->next;
+    slot* currSlot = head;
+    while (currSlot != nullptr)
+    {
         boardSize += 1;
-    }
-    if (startIdx < 0 || startIdx >= boardSize)
-    { // the starting index should be in the [0, boardSize) range
-        cout << "\n case 1\n";
-        return 1;
-    }
-
-    // case 4: entered slot index does not belong to the player
-    slot *belonging = head;
-    int currentIdx = 0;
-    while (belonging != nullptr && currentIdx < startIdx)
-    {
-        belonging = belonging->next;
-        currentIdx += 1;
-    }
-    if (belonging != nullptr)
-    {
-        char checkChr = ' '; // get the character for checking validity
-        if (belonging->slotStack.pop(checkChr))
-        { belonging->slotStack.push(checkChr); }
-        if (plyChr != checkChr)
-        {
-            cout << "\n case 4\n";
-            return 4;
-        }
-    }
-
-    // case 2: target slot index not within bounds
-    if (direction == 1)
-    {
-        if (startIdx + steps >= boardSize)
-        { // goes out of bounds from the right side
-            cout << "\n case 2\n";
-            return 2;
-        }
-    } else if (direction == 0)
-    {
-        if (startIdx - steps < 0)
-        { // goes out of bounsd from the left side
-            cout << "\n case 2\n";
-            return 2;
-        }
-    }
-
-
-    // case 3: target slot index is not empty AND does not belong to the player
-    if (direction == 1)
-    { // going to right side
-        slot *targetSlot = head;
-        currentIdx = 0;
-        while (targetSlot != nullptr && currentIdx < (startIdx + steps))
-        {
-            targetSlot = targetSlot->next;
-            currentIdx += 1;
-        }
-        if (targetSlot->slotStack.isEmpty() == false)
-        { // the target slot has some piece in it
-            char tempChar = ' ';
-            if (targetSlot->slotStack.pop(tempChar))
-            { targetSlot->slotStack.push(tempChar); }
-            if (plyChr != tempChar)
-            {
-                cout << "\n case 3\n";
-                return 3;
-            }
-        }
-    } else if (direction == 0)
-    { // going to left side
-        slot *targetSlot = tail;
-        currentIdx = boardSize - 1;
-        while (targetSlot != nullptr && currentIdx >= (startIdx - steps)) // probably > not >=
-        {
-            targetSlot = targetSlot->prev;
-            currentIdx -= 1;
-        }
-        if (targetSlot->slotStack.isEmpty() == false)
-        { // the target slot has some piece in it
-            char tempChar = ' ';
-            if (targetSlot->slotStack.pop(tempChar))
-            { targetSlot->slotStack.push(tempChar); }
-            if (plyChr != tempChar)
-            {
-                cout << "\n case 3\n";
-                return 3;
-            }
-        }
+        currSlot = currSlot->next;
     }
     
+    if (startIdx < 0 || startIdx >= boardSize) 
+    {
+        return 1;
+    } // start index out of bounds error code
+    
+    // Find the slot at the start index
+    slot* startSlot = head;
+    for (int i = 0; i < startIdx; i++)
+    {
+        startSlot = startSlot->next;
+    }
+    
+    // does the start slot belongs to the player?
+    char topChar = ' ';
+    startSlot->slotStack.pop(topChar);
+    startSlot->slotStack.push(topChar);
+    if (topChar != plyChr) 
+    {
+        return 4;
+    } // start slot does not belong to player error code
 
-    return 0; // the move is valid by default
+
+    // Find target index based on direction and number of steps
+    int targetIdx;
+    if (direction == 0) // going left
+    {
+        targetIdx = startIdx - steps;
+    }
+    else if (direction == 1) // going right
+    {
+        targetIdx = startIdx + steps;
+    }
+    
+    // Check if target index is within bounds
+    if (targetIdx < 0 || targetIdx >= boardSize) 
+    {
+        return 2;
+    } // target index out of bounds error code
+    
+    // Find the slot at the target index
+    slot* targetSlot = head;
+    for (int i = 0; i < targetIdx; i++)
+    {
+        targetSlot = targetSlot->next;
+    }
+    
+    // Check if target slot is empty or belongs to the player
+    char checkChar = ' ';
+    
+    if (targetSlot->slotStack.isEmpty() == true)
+    {
+        return 0;
+    } // the column is empty and is available for placement
+    else if (targetSlot->slotStack.isEmpty() == false)
+    {
+        targetSlot->slotStack.pop(checkChar);
+        targetSlot->slotStack.push(checkChar);
+        if (checkChar == plyChr)
+        {
+            return 0;
+        } else if (checkChar != plyChr) {
+            return 3;
+        }
+    }
+
+    return 0; 
 }
 
 void Board::movePiece(int originIdx, int targetIdx) // done?
 {
     // cout << "\nmove piece\n";
-    cout << "\n movePiece called.\n";
+    //cout << "\n movePiece called.\n";
     slot *originSlot = head, *targetSlot = head;
     int currentIdx = 0;
 
@@ -221,7 +193,7 @@ void Board::movePiece(int originIdx, int targetIdx) // done?
         char currentChar = ' ';
         if (originSlot->slotStack.pop(currentChar))
         { // move the player character from the original to the target column via the modified character
-            cout << "\n current char pop in move piece successful.\n";
+            // cout << "\n current char pop in move piece successful.\n";
             targetSlot->slotStack.push(currentChar);
         }
     }
@@ -229,7 +201,7 @@ void Board::movePiece(int originIdx, int targetIdx) // done?
 
 void Board::printBoard() // done
 {
-    cout << "\n printBoard called.\n";
+    // cout << "\n printBoard called.\n";
     cout << endl; // for styling purposes
     string topRow = "", midRow = "", endRow = "", baseCaret = "";
     // develop each row by poping the items of the stacks
@@ -268,7 +240,7 @@ int Board::evaluateGame()
     { result = 2; }
     if (xCnt == oCnt)
     { result = 3; }
-    cout << "\n Result in eval game is: " << result << endl;
+    // cout << "\n Result in eval game is: " << result << endl;
     return result;
 }
 
@@ -295,7 +267,7 @@ bool Board::targetSlotFull(int targetInd) // done?
 
 void Board::destroySlot(int targetInd) // done
 {
-    cout << "\n destroySlot called.\n";
+    // cout << "\n destroySlot called.\n";
     slot *targetSlot = head;
     int colIdx = 0;
 
@@ -342,7 +314,7 @@ void Board::destroySlot(int targetInd) // done
 
 void Board::createSlotBegin(char plyChr, int num) // done
 { // create a new slot with player's character at the beginning/left of the board
-    cout << "\n createSlotBegin called.\n"; 
+    // cout << "\n createSlotBegin called.\n"; 
     slot *newEndSlot = new slot;
     newEndSlot->next = nullptr;
     newEndSlot->prev = tail;
@@ -368,7 +340,7 @@ void Board::createSlotBegin(char plyChr, int num) // done
 
 void Board::createSlotEnd(char plyChr, int num) // done
 { // create a new slot with player's character at the end/right of the board
-    cout << "\n createSlotEnd called.\n";
+    // cout << "\n createSlotEnd called.\n";
     slot *newEndSlot = new slot;
 
     newEndSlot->next = nullptr;
@@ -395,23 +367,23 @@ void Board::createSlotEnd(char plyChr, int num) // done
 
 void Board::createEmptySlotEnd() // done
 { // // create an empty slot at the end/right of the board
-    cout << "\n createEmptySlotEnd called.\n";
-   slot *newSlot = new slot;
-   newSlot->next = nullptr;
-   newSlot->prev = tail;
-   newSlot->slotStack = CharStack();
+    // cout << "\n createEmptySlotEnd called.\n";
+    slot *newSlot = new slot;
+    newSlot->next = nullptr;
+    newSlot->prev = tail;
+    newSlot->slotStack = CharStack();
 
-   // the head pointer is the new slot if board is empty
-   if (head == nullptr)
-   { head = newSlot; }
-   else
-   { tail->next = newSlot; }
-   tail = newSlot; // update tail as the new column
+    // the head pointer is the new slot if board is empty
+    if (head == nullptr)
+    { head = newSlot; }
+    else
+    { tail->next = newSlot; }
+    tail = newSlot; // update tail as the new column
 }
 
 void Board::clearBoard() // done
 {
-    cout << "\n clearBoard called.\n";
+    // cout << "\n clearBoard called.\n";
     slot *currentSlot = head;
     char tempChar = ' ';
     while (currentSlot != NULL)
