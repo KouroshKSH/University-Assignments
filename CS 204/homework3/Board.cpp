@@ -27,68 +27,119 @@ Board::Board() // done
     xCnt = 0; oCnt = 0;
 }
 
-bool Board::noMove(char plyChr, int die) // done?
+bool Board::noMove(const char plyChr, const int steps) // done?
 { // returns false even if a single possible move is found, otherwise true
-    // cout << "\n noMove called.\n";
-    slot * currentSlot = head;
-    int currentIdx = 0;
-
-    while (currentSlot != NULL)
+    cout << "\n noMove called.\n";
+    slot* currentSlot = head;
+    slot* tempSlot = head;
+    int currentIdx = 0, boardSize = 0;
+    // find the size
+    while (tempSlot != nullptr)
     {
-        char tempChar = ' ';
+        boardSize += 1;
+        tempSlot = tempSlot->next;
+    }
+
+    cout << "\nsize of board is: " << boardSize << endl;
+
+    // while (currentSlot != nullptr && currentIdx < boardSize)
+    while (currentSlot != nullptr)
+    {
+        cout << "\ncurrent index is: " << currentIdx << endl;
+        char tempChar = '\0';
         if (currentSlot->slotStack.isEmpty() == false)
         { // to avoid shallow copy whilst not modifying the current slot
-            if (currentSlot->slotStack.pop(tempChar))
-            { currentSlot->slotStack.push(tempChar); }
+            currentSlot->slotStack.pop(tempChar);
+            currentSlot->slotStack.push(tempChar);
         }
-
+        
+        cout << "\ntemp char is: " << tempChar << endl;
+        // if (plyChr == tempChar && currentIdx > 0)
         if (plyChr == tempChar)
         {
-            // checking possibilities on the right-hand side
-            slot *possibleSlot = currentSlot;
-            int possibleIdx = currentIdx + die; // go forward with the steps
-            for (int i = 0; possibleSlot != nullptr && i < die; i++)
-            { possibleSlot = possibleSlot->next; } // next points to right columns
-            if (possibleSlot != nullptr)
-            {
-                char topChr = ' ';
-                if (possibleSlot->slotStack.isEmpty() == false)
-                {
-                    if (possibleSlot->slotStack.pop(topChr))
-                    { possibleSlot->slotStack.push(topChr); }
-                }
-                if (topChr == ' ' || topChr == plyChr)
-                { // at least one valid move has been found
-                    return false;
-                }
-            }
-
+            cout << "\ntemp char is equal to player char.\n";
             // checking possibilities on the left-hand side
-            possibleSlot = currentSlot;
-            possibleIdx = currentIdx - die; // go backwards with the steps
-            for (int i = 0; possibleSlot != nullptr && i < die; i++)
-            { possibleSlot = possibleSlot->prev; } // prev points to left columns
-            if (possibleSlot != nullptr)
+            cout << "\ngoing for left.\n";
+            slot* possibleSlot = currentSlot;
+            //if (possibleSlot->prev != NULL)
+            if (possibleSlot != head)
             {
-                char topChr = ' ';
-                if (possibleSlot->slotStack.isEmpty() == false)
+                cout << "\nthe previous of poss slot is not nullptr and starting forloop.\n";
+                // check left side
+                for (int i = 0; possibleSlot != nullptr && i < steps; i++)
                 {
-                    if (possibleSlot->slotStack.pop(topChr))
-                    { possibleSlot->slotStack.push(topChr); }
-                }
-                if (topChr == ' ' || topChr == plyChr)
-                { // at least one valid move has been found
-                    return false;
+                    possibleSlot = possibleSlot->prev;
+                } // prev points to left columns
+                if (possibleSlot != nullptr)
+                {
+                    cout << "\npossible slot is not nullptr for left check.\n";
+                    cout << "\nindex is: " << currentIdx << endl;
+                    char topChr = '\0';
+                    if (possibleSlot->slotStack.isEmpty() == false)
+                    {
+                        possibleSlot->slotStack.pop(topChr);
+                        possibleSlot->slotStack.push(topChr);
+                        cout << "\nfor left, pop push happened and top char is: " << topChr << endl;
+                    }
+                    if (topChr == '\0' || topChr == plyChr)
+                    // if (topChr == plyChr)
+                    { // at least one valid move has been found
+                        cout << "\nor condition being checked for left and top char is: " << topChr << endl;
+                        // if (possibleSlot->slotStack.isFull() == false)
+                        // {
+                        //     cout << "\npossible slot is not full for left and return false.\n";
+                        //     return false;
+                        // }
+                        return false;
+                    }
                 }
             }
+            // else if (possibleSlot == head)
+            // {
+
+            // }
+
+            
+            // checking possibilities on the right-hand side
+            cout << "\ngoing for right.\n";
+            possibleSlot = currentSlot;
+            for (int i = 0; possibleSlot != nullptr && i < steps; i++)
+            {
+                possibleSlot = possibleSlot->next;
+            } // next points to right columns
+            if (possibleSlot != nullptr)
+            {
+                cout << "\npossible slot is not nullptr\n";
+                char topChr = '\0';
+                if (possibleSlot->slotStack.isEmpty() == false)
+                {
+                    possibleSlot->slotStack.pop(topChr);
+                    possibleSlot->slotStack.push(topChr);
+                    cout << "\npop and push done and top char is: " << topChr << endl;
+                }
+                if (topChr == '\0' || topChr == plyChr)
+                // if (topChr == plyChr)
+                { // at least one valid move has been found
+                    cout << "\nchecked the or for right as well\n";
+                    if (possibleSlot->slotStack.isFull() == false)
+                    {
+                        cout << "\npossible slot is not full for right check too.\n";
+                        return false;
+                    }
+                    //return false;
+                }
+            } 
         }
+
         currentSlot = currentSlot->next; // move on to the rest of the columns
         currentIdx += 1;
+        cout << "\nincreased current idx to: " << currentIdx << " at the end ofwhile.\n";
     }
+    cout << "\nall possibilities checkd, now returning true.\n";
     return true; // by default, there are no possible moves
 }
 
-int Board::validMove(const char plyChr, int startIdx, int steps, int direction)
+int Board::validMove(const char plyChr, const int startIdx, const int steps, const int direction)
 {
     // Find the size of the board
     int boardSize = 0;
@@ -156,10 +207,8 @@ int Board::validMove(const char plyChr, int startIdx, int steps, int direction)
     {
         targetSlot->slotStack.pop(checkChar);
         targetSlot->slotStack.push(checkChar);
-        if (checkChar == plyChr)
+        if (checkChar != plyChr)
         {
-            return 0;
-        } else if (checkChar != plyChr) {
             return 3;
         }
     }
@@ -326,10 +375,14 @@ void Board::createSlotBegin(char plyChr, int num) // done
     newEndSlot->slotStack = newEndStack;
 
 
-    if (head == nullptr) // the head pointer is the new slot when board is empty
-    { head = newEndSlot; }
-    else // else, set the next pointer of the tail slot to the new slot
-    { newEndSlot->next = head; }
+    if (head == NULL) // the head pointer is the new slot when board is empty
+    {
+        head = newEndSlot;
+    }
+    else
+    { // set the next pointer of the tail slot to the new slot
+        newEndSlot->next = head;
+    }
     head = newEndSlot; // update the head as the new column
 
     if (plyChr == 'x')
@@ -352,7 +405,7 @@ void Board::createSlotEnd(char plyChr, int num) // done
 
     newEndSlot->slotStack = newEndStack;
 
-    if (head == nullptr) // the head pointer to the new slot when board is empty
+    if (head == NULL) // the head pointer to the new slot when board is empty
     { head = newEndSlot; }
     else
     { tail->next = newEndSlot; }
