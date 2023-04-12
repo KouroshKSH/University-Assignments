@@ -5,8 +5,7 @@
 
 struct slot
 {
-    slot * next;
-    slot * prev;
+    slot * next; slot * prev;
     CharStack slotStack;
     slot () {} // defeault
 };
@@ -14,22 +13,20 @@ struct slot
 class Board
 {
 private:
-    slot * head; 
-    slot * tail;
-    int xCnt;
-    int oCnt;
+    slot * head;  slot * tail;
+    int xCnt; int oCnt;
 
 public:
     Board();
     bool noMove(const char, const int);
     int validMove(const char, const int, const int, const int);
-    void movePiece(int, int);
+    void movePiece(const int, const int);
     void printBoard();
     int evaluateGame();
-    bool targetSlotFull(int);
-    void destroySlot(int);
-    void createSlotBegin(char, int);
-    void createSlotEnd(char, int);
+    bool targetSlotFull(const int);
+    void destroySlot(const int);
+    void createSlotBegin(const char, const int);
+    void createSlotEnd(const char, const int);
     void createEmptySlotEnd();
     void clearBoard();
 };
