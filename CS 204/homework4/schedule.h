@@ -5,25 +5,6 @@
 #include <string>
 using namespace std;
 
-/*
-TODO:
-[ ] 01. default constructor
-[ ] 02. parametric constructor
-[ ] 03. deep copy constructor
-[ ] 04. destructor
-[ ] 05. = overload
-[ ] 06. + overload
-    [ ] 6.1. addition of Days to Schedule
-    [ ] 6.2. addition of integer to Schedule
-    [ ] 6.3. addition of Schedule to Schedule
-[ ] 07. * overload
-[ ] 08. [] overload
-[ ] 09. < overload
-[ ] 10. << overload
-    [ ] 10.1. for Schedule
-    [ ] 10.2. for Days
-*/
-
 enum Days {Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday};
 
 class Schedule
@@ -40,8 +21,27 @@ class Schedule
 
         Schedule& operator=(const Schedule& other); // assignment operator
         Schedule operator*(const Schedule& other) const; // asterisk operator
-        string* operator[](const Days day) const; // square bracket operator
+        string* operator[](const Days day) const; // square bracket operator using enum
         bool operator<(const Schedule& other) const; // less than operator
+
+        int getTimeSlots() const; // getter function for time_slots
+        string** getData() const; // getter function for double pointer of data
+        //string* getDay(const Days day) const; // getter function for day
+
+        void setData(const int i, const int j, const string& value); // setter function for data
 };
+
+
+ostream& operator<<(ostream& os, const Schedule& rhs);
+ostream& operator<<(ostream& os, const Days rhs);
+
+// Overloading + for Schedule objects and Days values
+Schedule operator+(const Schedule& lhs, const Days rhs); 
+
+// Overloading + for Schedule objects and integers
+Schedule operator+(const Schedule& lhs, const int rhs);
+
+// Overloading + for Schedule objects
+Schedule operator+(const Schedule& lhs, const Schedule& rhs);
 
 #endif
