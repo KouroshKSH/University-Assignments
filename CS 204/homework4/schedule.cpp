@@ -1,5 +1,7 @@
 #include <iostream>
 #include <string>
+#include <iomanip>
+#include <sstream>
 #include "schedule.h"
 
 using namespace std;
@@ -46,8 +48,10 @@ Schedule::Schedule(const int col) : time_slots(col), data(nullptr)
 // deep copy constructor
 Schedule::Schedule(const Schedule& other) : time_slots(other.time_slots), data(nullptr)
 {
+    // time_slots can be shallow copied since it's just an integer
     data = new string*[7];
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < 7; i++)
+    {   // perform deep copy
         data[i] = new string[time_slots];
         for (int j = 0; j < time_slots; j++)
         { data[i][j] = other.data[i][j]; } // copy elements from "other"
@@ -62,7 +66,7 @@ Schedule::~Schedule() {
     delete[] data;
 }
 
-Schedule& operator=(const Schedule& rhs)
+Schedule& Schedule::operator=(const Schedule& rhs)
 {
     // do nothing if it's assigning to itself
     if (this == &rhs)
@@ -128,4 +132,135 @@ bool Schedule::operator<(const Schedule& other) const
     }
 
     return (leftBusyCounter < rightBusyCounter); // is true when 'this' has less busy days than 'other'
+}
+
+int Schedule::getTimeSlots() const
+{
+  return time_slots;
+}
+
+string** Schedule::getData() const
+{
+    return data;
+}
+
+// string* getDay(const Days day) const
+// {
+//     return data[day];
+// }
+
+// Overloading << for Schedule objects
+ostream& operator<<(ostream& os, const Schedule& rhs)
+{
+    for (int i = 0; i < rhs.getTimeSlots(); i++)
+    {
+        for (int j = 0; j < 7; j++)
+        {
+            string** temp = rhs.getData();
+            os << temp[i][j] << " ";
+        }
+        os << endl;
+    }
+    return os;
+}
+
+// Overloading << for Days values
+ostream& operator<<(ostream& os, const Days rhs)
+{ // I intetionally didn't use switch-case since it was not taught in class
+    if (rhs == Monday)
+    { os << "Monday";}
+    else if (rhs == Tuesday)
+    { os << "Tuesday"; }
+    else if (rhs == Wednesday)
+    { os << "Wednesday"; }
+    else if (rhs == Thursday)
+    { os << "Thursday"; }
+    else if (rhs == Friday)
+    { os << "Friday"; }
+    else if (rhs == Saturday)
+    { os << "Saturday"; }
+    else if (rhs == Sunday)
+    { os << "Sunday"; }
+    return os;
+}
+
+void Schedule::setData(const int i, const int j, const string& value)
+{ // setter (mutator) function for assigning a value to the right index of the 2D matrix
+  data[i][j] = value;
+}
+
+// Overloading + for Schedule objects and Days values
+Schedule operator+(const Schedule& lhs, const Days rhs)
+{
+    // Schedule result = lhs;
+    // for (int i = 0; i < result.getTimeSlots(); i++)
+    // { result.data[i][rhs] = "busy"; }
+    // return result;
+
+    Schedule result = lhs;
+    for (int i = 0; i < result.getTimeSlots(); i++)
+    {
+        if (rhs == Monday)
+        {
+            // result.data[i][0] = "busy";
+            result.setData(i, 0, "busy");
+        }
+        else if (rhs == Tuesday)
+        {
+            // result.data[i][1] = "busy";
+            result.setData(i, 1, "busy");
+        }
+        else if (rhs == Wednesday)
+        {
+            // result.data[i][2] = "busy";
+            result.setData(i, 2, "busy");
+        }
+        else if (rhs == Thursday)
+        {
+            // result.data[i][3] = "busy";
+            result.setData(i, 3, "busy");
+        } else if (rhs == Friday)
+        {
+            // result.data[i][4] = "busy";
+            result.setData(i, 4, "busy");
+        } else if (rhs == Saturday)
+        {
+            // result.data[i][5] = "busy";
+            result.setData(i, 5, "busy");
+        } else if (rhs == Sunday)
+        {
+            // result.data[i][6] = "busy";
+            result.setData(i, 6, "busy");
+        }
+    }
+    return result;
+}
+
+// Overloading + for Schedule objects and integers
+Schedule operator+(const Schedule& lhs, const int rhs)
+{
+    Schedule result = lhs;
+    for (int i = 0; i < result.getTimeSlots(); i++)
+    { result.setData(i, i + rhs, "busy"); } // was (i, rhs, "busy")
+    return result;
+}
+
+// Overloading + for Schedule objects
+Schedule operator+(const Schedule& lhs, const Schedule& rhs)
+{
+    //Schedule result(lhs.getTimeSlots(), lhs.getData());
+    Schedule result(lhs.getTimeSlots());
+    for (int i = 0; i < result.getTimeSlots(); i++)
+    {
+        for (int j = 0; j < 7; j++)
+        {
+            string** tempL = lhs.getData();
+            string ** tempR = rhs.getData();
+            if (tempL[i][j] == "free" && tempR[i][j] == "free")
+            { result.setData(i, j, "free"); }
+            else
+            { result.setData(i, j, "busy"); }
+        }
+    }
+    return result;
 }
