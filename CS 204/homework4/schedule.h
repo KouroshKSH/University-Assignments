@@ -25,10 +25,13 @@ class Schedule
         bool operator<(const Schedule& other) const; // less than operator
 
         int getTimeSlots() const; // getter function for time_slots
-        string** getData() const; // getter function for double pointer of data
+        //string** getData() const; // getter function for double pointer of data
+        const string& getData(int i, int j) const;
         //string* getDay(const Days day) const; // getter function for day
 
-        void setData(const int i, const int j, const string& value); // setter function for data
+        //void setData(const int i, const int j, const string& value); // setter function for data
+        // Mutator function to set the data value at a specific index
+        void setData(int row, int col, const string& value);
 };
 
 
