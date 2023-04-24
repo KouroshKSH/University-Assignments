@@ -28,6 +28,7 @@ TODO:
 // default constructor
 Schedule::Schedule ()  : time_slots(0), data(nullptr) 
 {
+    //cout << "\n\n\tdefault constructor has been called.\n\n";
     data = new string*[7]; // memory allocation
     for (int i = 0; i < 7; i++) // initialize elements to null
     { data[i] = nullptr; }
@@ -36,6 +37,7 @@ Schedule::Schedule ()  : time_slots(0), data(nullptr)
 // parametric constructor
 Schedule::Schedule(const int col) : time_slots(col), data(nullptr)
 {
+    //cout << "\n\n\tparametric constructor has been called.\n";
     data = new string*[7];
     for (int i = 0; i < 7; i++)
     {
@@ -48,6 +50,7 @@ Schedule::Schedule(const int col) : time_slots(col), data(nullptr)
 // deep copy constructor
 Schedule::Schedule(const Schedule& other) : time_slots(other.time_slots), data(nullptr)
 {
+    //cout << "\n\n\tdeep copy has been called.\n\n";
     // time_slots can be shallow copied since it's just an integer
     data = new string*[7];
     for (int i = 0; i < 7; i++)
@@ -59,7 +62,9 @@ Schedule::Schedule(const Schedule& other) : time_slots(other.time_slots), data(n
 }
 
 // destructor
-Schedule::~Schedule() {
+Schedule::~Schedule()
+{
+    //cout << "\n\n\tdestructor ~ has been called.\n\n";
     // memory deallocation
     for (int i = 0; i < 7; i++)
     { delete[] data[i]; }
@@ -68,6 +73,7 @@ Schedule::~Schedule() {
 
 Schedule& Schedule::operator=(const Schedule& rhs)
 {
+    //cout << "\n\n\toperator = has been called.\n\n";
     // do nothing if it's assigning to itself
     if (this == &rhs)
     { return *this; }
@@ -92,6 +98,7 @@ Schedule& Schedule::operator=(const Schedule& rhs)
 
 Schedule Schedule::operator*(const Schedule& other) const
 {
+    //cout << "\n\n\toperator * has been called.\n\n";
     // initialize bran new Schedule object with correct number of time slots
     Schedule result(this->time_slots);
 
@@ -111,11 +118,13 @@ Schedule Schedule::operator*(const Schedule& other) const
 
 string* Schedule::operator[](const Days day) const
 {
+    //cout << "\n\n\toprator [] has been called.\n\n";
     return data[day];
 }
 
 bool Schedule::operator<(const Schedule& other) const
 {
+    //cout << "\n\n\toperator < has been called.\n\n";
     int leftBusyCounter = 0;
     int rightBusyCounter = 0;
 
@@ -130,79 +139,63 @@ bool Schedule::operator<(const Schedule& other) const
             { rightBusyCounter += 1; }
         }
     }
-
     return (leftBusyCounter < rightBusyCounter); // is true when 'this' has less busy days than 'other'
 }
 
 int Schedule::getTimeSlots() const
-{
-  return time_slots;
-}
+{ return time_slots; }
 
-string** Schedule::getData() const
-{
-    return data;
-}
 
-// string* getDay(const Days day) const
-// {
-//     return data[day];
-// }
+const string& Schedule::getData(int i, int j) const
+{ return data[i][j]; }
 
-// Overloading << for Schedule objects
+// 1st << overload for Schedule objects
 ostream& operator<<(ostream& os, const Schedule& rhs)
 {
-    for (int i = 0; i < rhs.getTimeSlots(); i++)
+    //cout << "\n\n\t1st << operator has been called.\n\n";
+    string dayAbriviations[] = {"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"};
+    for (int i = 0; i < 7; i++)
     {
-        for (int j = 0; j < 7; j++)
-        {
-            string** temp = rhs.getData();
-            os << temp[i][j] << " ";
-        }
-        os << endl;
+        os << dayAbriviations[i] << ": ";
+        for (int j = 0; j < rhs.getTimeSlots(); j++)
+        { os << rhs.getData(i, j) << " "; }
+        os << "\n";
     }
     return os;
 }
 
-// Overloading << for Days values
+// 2nd << overload for Days values
 ostream& operator<<(ostream& os, const Days rhs)
-{ // I intetionally didn't use switch-case since it was not taught in class
-    if (rhs == Monday)
-    { os << "Monday";}
-    else if (rhs == Tuesday)
-    { os << "Tuesday"; }
-    else if (rhs == Wednesday)
-    { os << "Wednesday"; }
-    else if (rhs == Thursday)
-    { os << "Thursday"; }
-    else if (rhs == Friday)
-    { os << "Friday"; }
-    else if (rhs == Saturday)
-    { os << "Saturday"; }
-    else if (rhs == Sunday)
-    { os << "Sunday"; }
+{
+    //cout << "\n\n\t2nd << operator has been called.\n\n";
+    string dayFullNames[] = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    os << dayFullNames[rhs];
     return os;
 }
 
-void Schedule::setData(const int i, const int j, const string& value)
-{ // setter (mutator) function for assigning a value to the right index of the 2D matrix
-  data[i][j] = value;
+void Schedule::setData(int day, int time_slot, const string& value)
+{
+    // check if the day and time slot are within range
+    if (day >= 0 && day < 7 && time_slot >= 0 && time_slot < this->getTimeSlots())
+    {
+        // set the data for the specified day and time slot
+        this->data[day][time_slot] = value;
+    }
 }
+
 
 // Overloading + for Schedule objects and Days values
 Schedule operator+(const Schedule& lhs, const Days rhs)
 {
-    // Schedule result = lhs;
-    // for (int i = 0; i < result.getTimeSlots(); i++)
-    // { result.data[i][rhs] = "busy"; }
-    // return result;
-
+    cout << "\n\n\t1st + operator has been called.\n\n";
     Schedule result = lhs;
-    for (int i = 0; i < result.getTimeSlots(); i++)
+    cout << "\nrhs is: " << rhs << endl;
+    for (int i = 0; i < 7; i++) // changed form result.getTimeSlots()
     {
         if (rhs == Monday)
         {
             // result.data[i][0] = "busy";
+            //cout << "\nMonday has been set to busy\n";
             result.setData(i, 0, "busy");
         }
         else if (rhs == Tuesday)
@@ -236,31 +229,64 @@ Schedule operator+(const Schedule& lhs, const Days rhs)
     return result;
 }
 
+// // Overloading + for Schedule objects and integers
+// Schedule operator+(const Schedule& lhs, const int rhs)
+// {
+//     cout << "\n\n\t2nd + operator has been called.\n\n";
+//     Schedule result = lhs;
+//     //cout << "\n\tget time slots returns the number: " << result.getTimeSlots() << "\n";
+//     // gotta fix this, shouldn't make everything busy 
+//     for (int i = 0; i < 7; i++) // was getTimeSlots() instead of 7
+//     {
+//         result.setData(i, rhs, "busy");
+//     } // was (i, i + rhs, "busy")
+//     cout << "\nassigned busy to the " << rhs+1 << "th place successfully.\n";
+//     return result;
+// }
+
 // Overloading + for Schedule objects and integers
 Schedule operator+(const Schedule& lhs, const int rhs)
 {
+    // cout << ""
     Schedule result = lhs;
-    for (int i = 0; i < result.getTimeSlots(); i++)
-    { result.setData(i, i + rhs, "busy"); } // was (i, rhs, "busy")
+    for (int j = 0; j < result.getTimeSlots(); j++) // iterate through all time slots
+    {
+        //result.setData(rhs - 1, j, "busy"); // set the corresponding data to "busy"
+        //result.setData(j , rhs - 1, "busy");
+        result.setData(rhs-4, j, "busy");
+        //result.setData(j, rhs - 4, "busy");
+    }
+    cout << "\nassigned busy to the " << rhs << "th place successfully.\n";
     return result;
 }
+
 
 // Overloading + for Schedule objects
 Schedule operator+(const Schedule& lhs, const Schedule& rhs)
 {
-    //Schedule result(lhs.getTimeSlots(), lhs.getData());
-    Schedule result(lhs.getTimeSlots());
-    for (int i = 0; i < result.getTimeSlots(); i++)
+    cout << "\n\n3rd + overload and let's see if it works\n\n";
+    // create a new schedule object with the same number of elements
+    int size = lhs.getTimeSlots();
+    Schedule result(size);
+
+    // iterate through all the days (rows) as i and time_slots (columns) as j
+    for (int i = 0; i < 7; i++)
     {
-        for (int j = 0; j < 7; j++)
+        for (int j = 0; j < size; j++)
         {
-            string** tempL = lhs.getData();
-            string ** tempR = rhs.getData();
-            if (tempL[i][j] == "free" && tempR[i][j] == "free")
-            { result.setData(i, j, "free"); }
-            else
-            { result.setData(i, j, "busy"); }
+            // check if the time slot is "free" in both schedules
+            string leftData = lhs.getData(i, j);
+            string rightData = rhs.getData(i, j);
+            if (leftData == "free" && rightData == "free")
+            {
+                // set the corresponding day to free in the result schedule
+                result.setData(i, j, "free");
+            } else {
+                result.setData(i, j, "busy");
+            }
         }
     }
+
+    // return the final schedule
     return result;
 }
