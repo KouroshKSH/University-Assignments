@@ -19,32 +19,26 @@ class Schedule
         Schedule(const Schedule& other); // deep copy constructor
         ~Schedule(); // destructor
 
+        // getter functions for time_slots and data
+        int getTimeSlots() const;  
+        const string& getData(int i, int j) const;
+
+        // mutator function to set the data value at a specific index
+        void setData(int row, int col, const string& value);
+
+        // member functions for operator overloading (=, *, [], <)
         Schedule& operator=(const Schedule& other); // assignment operator
         Schedule operator*(const Schedule& other) const; // asterisk operator
         string* operator[](const Days day) const; // square bracket operator using enum
         bool operator<(const Schedule& other) const; // less than operator
-
-        int getTimeSlots() const; // getter function for time_slots
-        //string** getData() const; // getter function for double pointer of data
-        const string& getData(int i, int j) const;
-        //string* getDay(const Days day) const; // getter function for day
-
-        //void setData(const int i, const int j, const string& value); // setter function for data
-        // Mutator function to set the data value at a specific index
-        void setData(int row, int col, const string& value);
 };
 
+// free functions for operator overloading (<<, +)
+ostream& operator<<(ostream& os, const Schedule& rhs); // 1st leftshift operator
+ostream& operator<<(ostream& os, const Days rhs); // 2nd leftshift operator
 
-ostream& operator<<(ostream& os, const Schedule& rhs);
-ostream& operator<<(ostream& os, const Days rhs);
-
-// Overloading + for Schedule objects and Days values
-Schedule operator+(const Schedule& lhs, const Days rhs); 
-
-// Overloading + for Schedule objects and integers
-Schedule operator+(const Schedule& lhs, const int rhs);
-
-// Overloading + for Schedule objects
-Schedule operator+(const Schedule& lhs, const Schedule& rhs);
+Schedule operator+(const Schedule& lhs, const Days rhs); // 1st addition operator
+Schedule operator+(const Schedule& lhs, const int rhs); // 2nd addition operator
+Schedule operator+(const Schedule& lhs, const Schedule& rhs); // 3rd addition operator
 
 #endif
