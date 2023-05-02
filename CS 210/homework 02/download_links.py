@@ -73,17 +73,17 @@ def download_links_from_index():
         collected_url = "https://mfa.gov.md" + found_href
         # print(collected_url)
 
-        page = 0
+        page = 1
         # print(page)
         
         if collected_url not in downloaded_url_list:
             print("\t", collected_url, flush=True)
             save_link(collected_url, page)
         
-    # The rest are pages 2 to 28, but their URLs are 'page=1' until 'page=27', hence range(1, 28)
+    # The rest are pages 2 to 28, but their URLs are 'page=1' until 'page=27'
     base_url = "https://mfa.gov.md/en/press-release-types/comunicate-de-presa?page="
 
-    for page_ID in range(start_page, 28):
+    for page_ID in range(start_page, 29):
         # print(f"\ncurrent page id is: {page_ID}")
         
         page_url = base_url + str(page_ID)
@@ -103,7 +103,7 @@ def download_links_from_index():
             # print(collected_url)
 
             # Save the page that the url is taken from in the variable "page"
-            page = page_ID
+            page = page_ID+1
             # print(page_ID)
 
             # The following code block saves the collected url and page
