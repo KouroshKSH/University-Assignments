@@ -33,28 +33,57 @@ def extract_content_from_page(file_path):
     ##################################
     from dateutil import parser
 
-    soup = bs(open(file_path, 'r').read(), 'lxml')
+    # soup = bs(open(file_path, 'r').read(), 'lxml')
+    try:
+        with open(file_path, 'r') as f:
+            soup = bs(f.read(), 'lxml')
+    except Exception as e:
+        print(f"Failed to read file {file_path}: {e}")
+        soup = None
 
     # Get date
-    # print(soup.find('article', {'class': "publish-date"}).find('span', {'content'}))
-    # date_elem = soup.find('article', {'class': "publish-date"}).find('span', {'content'}) if soup.find('article', {'class': "publish-date"}) else None
     if soup.find('div', {'class': 'pane-content'}):
-        date_elem = soup.find('span', {'class': 'publish-date'}).find('span')['content']
+        date_elem = soup.find('span', {'class': 'publish-date'}) \
+                        .find('span')['content']
     else:
-        date_elem = None
-    # print("raw date element is: ", date_elem)
+        date_elem = "[NO DATE]"
+        print("failed in getting the date for", file_path)
     
-    # Turn the date element into something cleaner
+    # turn the date element into something cleaner
     parsed_date = parser.parse(date_elem)
-    formatted_date = parsed_date.strftime("%Y-%m-%d %H:%M:%S")
-    # print("formatted date is: ", formatted_date)
+    formatted_date = parsed_date.strftime("%Y-%m-%d %H:%M:%S")    
     
     parsed_data["date"] = formatted_date
 
     # Get Title
-
+    if soup.find('div', {'class': "panel-pane pane-node-content pressreleases"}): 
+        title_elem = soup.find('div', {'class': "panel-pane pane-node-content pressreleases"}) \
+                        .find('h2', {'class': 'pane-title'}).text
+    else:
+        title_elem = "[NO TITLE]"
+        print("failed in getting the title for", file_path)
+    
+    parsed_data["title"] = title_elem.strip()
 
     # Get content
+    if soup.find('div', {'class': "field field-name-body field-type-text-with-summary field-label-hidden"}):
+        content_elem = soup.find('div', {'class': "field field-name-body field-type-text-with-summary field-label-hidden"})
+    else:
+        content_elem = "[NO CONTENT]"
+        print("failed in getting the content for", file_path)
+    
+    parsed_data["content"] = content_elem.text.replace("\n", " ")
+
+    # Get image
+    if soup.find('div', {'class': "field-item even"}):
+        img_elem = soup.find('div', {'class': "field-item even"}) \
+                        .find('a')['href']
+    else:
+        img_elem = "[NO IMAGE]"
+        print("failed in getting the image for", file_path)
+    
+    parsed_data["image"] = img_elem
+    
     ##################################
 
     return parsed_data
@@ -98,9 +127,8 @@ def parse_html_pages():
 
         except Exception as e:
             print(f"Failed to parse page {page_id}: {e}")
-        
-        break
 
+        # break
 
 if __name__ == "__main__":
     parse_html_pages()
