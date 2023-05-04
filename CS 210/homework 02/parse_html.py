@@ -32,6 +32,7 @@ def extract_content_from_page(file_path):
     # WRITE YOUR CODE HERE
     ##################################
     from dateutil import parser
+    import re
 
     # soup = bs(open(file_path, 'r').read(), 'lxml')
     try:
@@ -72,17 +73,11 @@ def extract_content_from_page(file_path):
         content_elem = "[NO CONTENT]"
         print("failed in getting the content for", file_path)
     
-    parsed_data["content"] = content_elem.text.replace("\n", " ")
+    # Remove the '\u' substrings with regex
+    regex = re.compile(r'\b\w*\\u\w*\b')
+    clean_content = re.sub(regex, "", content_elem.text)
 
-    # Get image
-    if soup.find('div', {'class': "field-item even"}):
-        img_elem = soup.find('div', {'class': "field-item even"}) \
-                        .find('a')['href']
-    else:
-        img_elem = "[NO IMAGE]"
-        print("failed in getting the image for", file_path)
-    
-    parsed_data["image"] = img_elem
+    parsed_data["content"] = clean_content.strip()
     
     ##################################
 
