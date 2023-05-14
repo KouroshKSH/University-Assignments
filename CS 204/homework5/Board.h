@@ -7,23 +7,27 @@ using namespace std;
 
 struct Node
 {
-    // [ ] When initializing, use the string "None" as the owner of a slot.
     string owner;
     Node* next;
-    Node (); // [ ] write the default constructor if needed
-    Node (string o, Node * p); // [ ] write the constructor
+    Node () :
+        owner("None"), next(nullptr) {}
+    Node (string o, Node * p) :
+        owner(o), next(p) {}
 };
 
 class Board
 {
-    private:
-        Node * first;
+private:
+    Node * first;
 
-    public:
-    // [ ] fix the arguments for each function
-        void display();
-        string who_owns();
-        // [ ] write extra functions if needed
+public:
+// [ ] fix the arguments for each function
+    Board(const number_of_slots); // parametric constructor
+    Board(const Board & other); // deep copy constructor
+    ~Board(); // destructor
+    void display();
+    string who_owns(Node * node) const; // returns the name of the owner of that node
+    // [ ] write extra functions if needed
 };
 
 #endif
