@@ -9,23 +9,25 @@ using namespace std;
 
 class Player
 {
-    private:
-        Board & my_board; // reference variable
-        string player_name;
-        int player_balance;
-        Node * player_position;
+private:
+    Board & my_board; // reference variable
+    string player_name;
+    int player_balance;
+    Node * player_position;
 
-    public:
-    // [ ] fix the arguments for each function
-        // [ ] write constructors such as `Player();`
-        int move();
-        Node * where_am_I();
-        void pay_to_player();
-        int get_balance();
-        void deposit_money();
-        void buy_slot();
-        bool is_bankrupt();
-        void display();
+public:
+// [ ] fix the arguments for each function
+    Player(Board & my_board, const string & player_name, int player_balance);
+    int move(const int steps);
+    Node* where_am_I() const;
+    void pay_to_player(Player & otherPlayer, int money);
+    int get_balance() const;
+    void deposit_money(const int to_add)
+    void buy_slot(const int slot_price);
+    bool is_bankrupt() const;
+    /***/
+        void display(); // [ ] left to write
+    /***/
 };
 
 #endif

@@ -21,13 +21,13 @@ private:
     Node * first;
 
 public:
-// [ ] fix the arguments for each function
-    Board(const number_of_slots); // parametric constructor
-    Board(const Board & other); // deep copy constructor
-    ~Board(); // destructor
-    void display();
-    string who_owns(Node * node) const; // returns the name of the owner of that node
-    // [ ] write extra functions if needed
+    Board(const number_of_slots);
+    Board(const Board & other);
+    ~Board();
+    /***/
+        void display(); // [ ] write this
+    /***/
+    string who_owns(Node * node) const;
 };
 
 #endif
