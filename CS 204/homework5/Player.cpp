@@ -16,7 +16,10 @@ using namespace std;
 // } 
 
 Player::Player(Board& board, const string& name, int capital)
-    : my_board(board), player_name(name), player_balance(capital), player_position(nullptr) {/*cout << "\n\tcalled Player constructor\n";*/}
+    : my_board(board), player_name(name), player_balance(capital){
+    player_position = board.get_first_node();        
+        /*cout << "\n\tcalled Player constructor\n";*/
+}
 
 int Player::move(int steps)
 { // move the player and tell if he has passed the starting point
@@ -24,49 +27,27 @@ int Player::move(int steps)
     Node* current_node = player_position; // where the player currently is
     //cout << "Owner: " << current_node->owner << ", Next: " << current_node->next << endl;
     //cout << "\n\tassigned current node successfully\n";
-    bool result = false;
+    int result = 0;
     Node* first_node = my_board.get_first_node();
     // Node* first_node = my_board.first; // gives error
     //cout << "\n\tassigned the first node\n";
     for (int i = 0; i < steps; i++)
     {
-        //cout << "\t\tin for loop of move and i is: " << i << endl;
-        // current_node = current_node->next;
-        //cout << "\t\tin for loop of move and i is: " << i << endl;
-        if (current_node == nullptr)
-        {
-            // Handle the case where the player's position is not set
-            // Set the player's position to the first node of the board
-            current_node = my_board.get_first_node();
-        }
-        else
-        { current_node = current_node->next; }
-
-        // if (current_node != nullptr)
-        // { current_node = current_node->next;}
-
-        //cout << "\t\tassigned next node to current node.\n";
+        current_node = current_node->next;
         if (first_node == current_node)
-        { result = true; /*cout << "\t\tresult is true";*/}
+        { result = 1;}
     }
-
-    //cout << "\n\tgot out of for loop\n";
-
     player_position = current_node;
-
-    if (result == true)
-    { /*cout << "\n\tresult of move is 1\n";*/ return 1; }
-    else 
-    { /*cout << "\n\tresult of move is 0\n";*/ return 0; }
+    return result;
 }
 
 Node* Player::where_am_I() const
-{ cout << "\n\tcalled where am I\n";return player_position; } // return the position of the player
+{ /*cout << "\n\tcalled where am I\n";*/return player_position; } // return the position of the player
 
 
 void Player::pay_to_player(Player& otherPlayer, int money)
 { // take away money from the current player and give to the other one
-    cout << "\n\tcalled pay to player\n";
+    // cout << "\n\tcalled pay to player\n";
     player_balance -= money;
     otherPlayer.player_balance += money;
 }
@@ -86,13 +67,11 @@ void Player::buy_slot(int slot_price)
 
 bool Player::is_bankrupt() const
 { // this function returns false when the balance in negative and vice versa
-    cout << "\n\tcalled is bankrupt\n";    
-    bool result = false;
+    // cout << "\n\tcalled is bankrupt\n";    
     if (player_balance < 0)
-    { result = true;}
-    else if (player_balance >= 0)
-    { result = false; }
-    return result;
+    { return true;}
+    else
+    { return false; }
 }
 
 
@@ -102,5 +81,14 @@ this needs revision
 void Player::display() const
 {
     //cout << "\n\tcalled display for Player\n";
+    Node* temp_first_node = my_board.get_first_node();
+    Node* current_node = player_position;
+    int distance = 1;
+    while (temp_first_node != current_node)
+    {
+        distance += 1;
+        temp_first_node = temp_first_node->next;
+    }
+    cout << "\n\t\t=== The distance was: " << distance << endl;
     cout << player_name << " " << player_balance << endl;
 }

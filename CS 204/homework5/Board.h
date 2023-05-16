@@ -9,8 +9,9 @@ struct Node
 {
     string owner;
     Node* next;
-    Node () :
-        owner("None"), next(nullptr) {}
+    // Node () :
+    //     owner("None"), next(nullptr) {}
+    Node();
     Node (string o, Node* p) :
         owner(o), next(p) {}
 };
