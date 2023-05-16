@@ -17,7 +17,6 @@ private:
     Node * player_position;
 
 public:
-// [ ] fix the arguments for each function
     Player(Board& my_board, const string& player_name, int player_balance);
     int move(int steps);
     Node* where_am_I() const;
@@ -26,9 +25,7 @@ public:
     void deposit_money(int to_add);
     void buy_slot(int slot_price);
     bool is_bankrupt() const;
-    /***/
-        void display() const; // [ ] left to write
-    /***/
+    void display() const;
 };
 
 #endif

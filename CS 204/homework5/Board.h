@@ -9,9 +9,7 @@ struct Node
 {
     string owner;
     Node* next;
-    // Node () :
-    //     owner("None"), next(nullptr) {}
-    Node();
+    Node(); // no need for default constructor
     Node (string o, Node* p) :
         owner(o), next(p) {}
 };
@@ -23,11 +21,8 @@ private:
 
 public:
     Board(int number_of_slots);
-    Board(const Board& other);
     ~Board();
-    /***/
-        void display(); // [ ] write this
-    /***/
+    void display(); 
     string who_owns(Node* node) const;
     Node* get_first_node();
 };
