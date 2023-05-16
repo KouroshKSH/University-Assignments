@@ -8,7 +8,7 @@ using namespace std;
 
 Board::Board(int number_of_slots)
 { // parametric constructor
-    cout << "\n\tcalled Board constructor\n";
+    //cout << "\n\tcalled Board constructor\n";
     int n = number_of_slots;
     first = new Node("None", nullptr); // define the first node as None
     Node* current = first;
@@ -22,7 +22,7 @@ Board::Board(int number_of_slots)
 
 Board::Board(const Board& other)
 { // deep copy constructor
-    cout << "\n\tcalled deep copy for Board\n";
+    //cout << "\n\tcalled deep copy for Board\n";
     // the first slot is owned by no one
     first = new Node("None", nullptr);
     Node* current = first; // assign the first node
@@ -53,7 +53,7 @@ Board::~Board()
 
 void Board::display()
 { // display the content of the board
-    cout << "\n\tcalled display for Board\n";
+    //cout << "\n\tcalled display for Board\n";
     Node* temp = first;
     string midRow = "^";
     string lastRow = "|";
@@ -69,10 +69,7 @@ void Board::display()
         lastRow += "----<-";
         temp = temp->next;
     }
-    cout << temp->owner << endl;
-    cout << midRow << "  |\n";
-    cout << lastRow << "--v";
-    cout << endl;
+    cout << temp->owner << "\n" << midRow << "  |\n" << lastRow << "--v\n";
 }
 
 string Board::who_owns(Node* node) const
@@ -80,6 +77,6 @@ string Board::who_owns(Node* node) const
 
 Node* Board::get_first_node()
 {  // a getter function for returning the first node
-    cout << "\n\tcalled getter Board\n";
+    //cout << "\n\tcalled getter Board\n";
     return first;
 }
