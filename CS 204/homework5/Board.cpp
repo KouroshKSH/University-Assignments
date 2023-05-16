@@ -6,8 +6,9 @@
 
 using namespace std;
 
-Board::Board(const int number_of_slots)
+Board::Board(int number_of_slots)
 { // parametric constructor
+    cout << "\n\tcalled Board constructor\n";
     int n = number_of_slots;
     first = new Node("None", nullptr); // define the first node as None
     Node* current = first;
@@ -19,8 +20,9 @@ Board::Board(const int number_of_slots)
     current->next = first; // make the board circular
 }
 
-Board::Board(const Board & other)
+Board::Board(const Board& other)
 { // deep copy constructor
+    cout << "\n\tcalled deep copy for Board\n";
     // the first slot is owned by no one
     first = new Node("None", nullptr);
     Node* current = first; // assign the first node
@@ -39,6 +41,7 @@ Board::Board(const Board & other)
 
 Board::~Board()
 { // destructor
+    cout << "\n\tcalled destructor\n";
     Node* current = first;
     while (current != nullptr)
     { // iterate until all slots are deleted
@@ -48,6 +51,35 @@ Board::~Board()
     }
 }
 
-string Board::who_owns(Node* node) const
-{ return node->owner; } // returns the name of the owner of that node
+void Board::display()
+{ // display the content of the board
+    cout << "\n\tcalled display for Board\n";
+    Node* temp = first;
+    string midRow = "^";
+    string lastRow = "|";
+    while(temp->next != first)
+    {
+        string slotOwner = temp->owner;
+        cout << slotOwner;
+        if(slotOwner != "None")
+        { cout << " "; }
+        cout << "->";
 
+        midRow += "      ";
+        lastRow += "----<-";
+        temp = temp->next;
+    }
+    cout << temp->owner << endl;
+    cout << midRow << "  |\n";
+    cout << lastRow << "--v";
+    cout << endl;
+}
+
+string Board::who_owns(Node* node) const
+{ cout << "\n\tcalled who owns\n"; return node->owner; } // returns the name of the owner of that node
+
+Node* Board::get_first_node()
+{  // a getter function for returning the first node
+    cout << "\n\tcalled getter Board\n";
+    return first;
+}

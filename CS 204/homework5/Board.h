@@ -11,23 +11,24 @@ struct Node
     Node* next;
     Node () :
         owner("None"), next(nullptr) {}
-    Node (string o, Node * p) :
+    Node (string o, Node* p) :
         owner(o), next(p) {}
 };
 
 class Board
 {
 private:
-    Node * first;
+    Node* first;
 
 public:
-    Board(const number_of_slots);
-    Board(const Board & other);
+    Board(int number_of_slots);
+    Board(const Board& other);
     ~Board();
     /***/
         void display(); // [ ] write this
     /***/
-    string who_owns(Node * node) const;
+    string who_owns(Node* node) const;
+    Node* get_first_node();
 };
 
 #endif
