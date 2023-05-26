@@ -27,7 +27,7 @@ using namespace this_thread;
 void func_hello(int order); // experimental
 void func_handle_overflow(); // experimental
 void func_testing_q(int size); // experimental
-void funcPlayerThread(int playerID, IntQueueHW6& chairQ);
+void funcPlayerThread(int playerID, IntQueueHW6& chairQ, struct tm *ptm);
 void funcPrintQ(IntQueueHW6 my_q); // for debugging purposes
 
 mutex mutexQ;
@@ -42,8 +42,8 @@ int main()
     int num_of_chairs = num_of_players - 1;
 
     cout << "Game Start!\n\n";
-    time_t tt = chrono::system_clock::to_time_t (chrono::system_clock::now());  //gets the current time
-    struct tm *ptm = localtime(&tt);
+    time_t current_time = chrono::system_clock::to_time_t (chrono::system_clock::now());  //gets the current time
+    struct tm *ptm = localtime(&current_time);
     cout << "Time is now " << put_time(ptm,"%X") << endl;  //displaying the time 
 
     /*experimental*/
@@ -76,7 +76,7 @@ int main()
     cout << "\tcreating the threads...\n";
     for (int i = 0; i < num_of_players; i++)
     {
-        player_threads[i] = (thread(funcPlayerThread, i, ref(chairQ)));
+        player_threads[i] = (thread(funcPlayerThread, i, ref(chairQ), ptm));
     }
     for (int i = 0; i < num_of_players; i++)
     {
@@ -92,19 +92,36 @@ int main()
     return 0;
 }
 
-void funcPlayerThread(int playerID, IntQueueHW6& chairQ)
+void funcPlayerThread(int playerID, IntQueueHW6& chairQ, struct tm *ptm)
 {
+    // cout << "\tstarting player thread and sleep...\n";
+    // Calculate the start time for the players, which is 2 seconds after the current time
+    ptm->tm_sec += 2;
+
+    // Handle minute overflow by incrementing the minute and resetting the seconds
+    if (ptm->tm_sec >= 60)
+    {
+        cout << "\tsecond was greater equal to 60.\n";
+        ptm->tm_sec %= 60;
+        ptm->tm_min++;
+    }
+
+    // Sleep until the calculated start time
+    this_thread::sleep_until(chrono::system_clock::from_time_t(mktime(ptm)));
+    // cout << "player " << get_id() << " slept for 2 seconds.\n";
+
+
     mutexQ.lock();
-    cout << "mutex is locked.\n";
+    // cout << "\t\t=== mutex is locked ===\n";
     // print the id of the player
-    ostringstream os;
-    os << "for player " << playerID << ": " << get_id() << endl;
-	cout << os.str();
+    // ostringstream os;
+    // os << "for player " << playerID << ": " << get_id() << endl;
+	// cout << os.str();
 
     chairQ.enqueue(playerID);
-    cout << "enqueued the player ID.\n";
+    // cout << "enqueued the player ID.\n";
 
-    cout << "unlocking mutex...\n";
+    // cout << "\t\t=== unlocking mutex... ===\n";
     mutexQ.unlock();
 
     
