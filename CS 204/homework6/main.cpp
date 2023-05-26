@@ -19,6 +19,7 @@ To implement this program, we will need to:
 #include <ctime>
 #include <string>
 #include <sstream>
+#include <vector>
 #include "IntQueueHW6.h"
 
 using namespace std;
@@ -41,10 +42,78 @@ int main()
     cin >> num_of_players;
     int num_of_chairs = num_of_players - 1;
 
-    cout << "Game Start!\n\n";
-    time_t current_time = chrono::system_clock::to_time_t (chrono::system_clock::now());  //gets the current time
-    struct tm *ptm = localtime(&current_time);
-    cout << "Time is now " << put_time(ptm,"%X") << endl;  //displaying the time 
+    IntQueueHW6 chairQ(num_of_chairs);
+    // Create an array to track eliminated players
+    vector<bool> eliminated(num_of_players, false);
+    
+    cout << "Game Start!\n";
+
+    while (num_of_chairs >= 2)
+    {
+        time_t current_time = chrono::system_clock::to_time_t (chrono::system_clock::now());  //gets the current time
+        struct tm *ptm = localtime(&current_time);
+        cout << "\nTime is now " << put_time(ptm,"%X") << endl;  //displaying the time 
+        // Calculate the start time for the players, which is 2 seconds after the current time
+        ptm->tm_sec += 2;
+
+        // Handle minute overflow by incrementing the minute and resetting the seconds
+        if (ptm->tm_sec >= 60)
+        {
+            //cout << "\tsecond was greater equal to 60.\n";
+            ptm->tm_sec %= 60;
+            ptm->tm_min++;
+        }
+
+        // Sleep until the calculated start time
+        this_thread::sleep_until(chrono::system_clock::from_time_t(mktime(ptm)));
+        
+        // create the threads for players
+        // IntQueueHW6 chairQ(num_of_chairs);
+        vector<thread> player_threads(num_of_players); // define as vector due to dynamic size
+        for (int i = 0; i < num_of_players; i++)
+        {
+            if (!eliminated[i]) // Skip eliminated players
+            { player_threads[i] = thread(funcPlayerThread, i, ref(chairQ), ptm); }
+            // player_threads[i] = (thread(funcPlayerThread, i, ref(chairQ), ptm));
+        }
+        for (int i = 0; i < num_of_players; i++)
+        {
+            if (player_threads[i].joinable())
+            { player_threads[i].join(); }
+        }
+
+        // print the queue
+        cout << "Remaining players are as follows: ";
+        funcPrintQ(chairQ);
+
+        // Identify the player who couldn't capture a chair and mark them as eliminated
+        int eliminated_player_id;
+        chairQ.dequeue(eliminated_player_id);
+        eliminated[eliminated_player_id] = true;
+
+        num_of_players--;
+        num_of_chairs--; // reduce these every round
+        chairQ.clear(); // reset the chairs for the next round
+    }
+
+    cout << "\nGame over!\n";
+    // int winnerID;
+    // chairQ.dequeue(winnerID);
+    // cout << "Winner is Player " << winnerID << "!\n"; 
+        // Find the winner among the remaining players
+    int winner_id = -1;
+    for (int i = 0; i < num_of_players; i++)
+    {
+        if (!eliminated[i])
+        {
+            winner_id = i;
+            break;
+        }
+    }
+
+    cout << "Winner is Player " << winner_id << "!\n";
+    return 0;
+
 
     /*experimental*/
     // create a thread
@@ -70,44 +139,11 @@ int main()
     /*experimental*/
     // func_testing_q(num_of_chairs);
     /*experimental*/
-
-    thread player_threads[num_of_players];
-    IntQueueHW6 chairQ(num_of_chairs + 1); // change this to num of chairs
-    cout << "\tcreating the threads...\n";
-    for (int i = 0; i < num_of_players; i++)
-    {
-        player_threads[i] = (thread(funcPlayerThread, i, ref(chairQ), ptm));
-    }
-    for (int i = 0; i < num_of_players; i++)
-    {
-        player_threads[i].join();
-    }
-    cout << "\tjoined all threads.\n";
-    // print the queue
-    cout << "\tprinting queue in main:\n";
-    funcPrintQ(chairQ);
-
-    cout << "Game over!\n";
-    cout << "Winner is Player 3!\n"; // change this
-    return 0;
 }
 
 void funcPlayerThread(int playerID, IntQueueHW6& chairQ, struct tm *ptm)
 {
     // cout << "\tstarting player thread and sleep...\n";
-    // Calculate the start time for the players, which is 2 seconds after the current time
-    ptm->tm_sec += 2;
-
-    // Handle minute overflow by incrementing the minute and resetting the seconds
-    if (ptm->tm_sec >= 60)
-    {
-        cout << "\tsecond was greater equal to 60.\n";
-        ptm->tm_sec %= 60;
-        ptm->tm_min++;
-    }
-
-    // Sleep until the calculated start time
-    this_thread::sleep_until(chrono::system_clock::from_time_t(mktime(ptm)));
     // cout << "player " << get_id() << " slept for 2 seconds.\n";
 
 
@@ -118,7 +154,15 @@ void funcPlayerThread(int playerID, IntQueueHW6& chairQ, struct tm *ptm)
     // os << "for player " << playerID << ": " << get_id() << endl;
 	// cout << os.str();
 
-    chairQ.enqueue(playerID);
+    if (!chairQ.isFull())
+    {
+        chairQ.enqueue(playerID);
+        time_t player_time = chrono::system_clock::to_time_t (chrono::system_clock::now());  //gets the current time
+        struct tm *player_ptm = localtime(&player_time);
+        cout << "Player " << playerID << " captured a chair at " << put_time(player_ptm,"%X") << ".\n";  //displaying the time 
+    } else {
+        cout << "Player " << playerID << " couldn't capture a chair.\n";
+    }
     // cout << "enqueued the player ID.\n";
 
     // cout << "\t\t=== unlocking mutex... ===\n";
@@ -129,19 +173,13 @@ void funcPlayerThread(int playerID, IntQueueHW6& chairQ, struct tm *ptm)
 
 void funcPrintQ(IntQueueHW6 my_q)
 {
-    if (my_q.isEmpty())
+    while (!my_q.isEmpty()) 
     {
-        cout << "q is empty\n";
-    } else {
-        cout << "content of q:\n";
-        while (!my_q.isEmpty()) 
-        {
-            int currNum;
-            my_q.dequeue(currNum);
-            cout << currNum << " ";
-        }
-        cout << endl;
+        int currNum;
+        my_q.dequeue(currNum);
+        cout << currNum << " ";
     }
+    cout << endl;
 }
 
 void func_testing_q(int size)
