@@ -26,8 +26,8 @@ using namespace std;
 // Global variables
 IntQueueHW6 chairs(0);  // Queue representing the chairs
 mutex mtx;  // Mutex for synchronization
-
-// int currentPlayerID = 0;  // Current player ID
+vector<int> eliminated; // For checking elimination status of each player
+vector<int> IDofPlayer;
 
 // Thread function for each player
 void playerThread(int playerID, struct tm *ptm)
@@ -38,14 +38,17 @@ void playerThread(int playerID, struct tm *ptm)
     ostringstream os;
     if (!chairs.isFull())
     {
-        chairs.enqueue(playerID);
+        // eliminated[playerID] = 0;
+        eliminated.push_back(playerID);
         time_t player_time = chrono::system_clock::to_time_t (chrono::system_clock::now());  //gets the current time
         struct tm *player_ptm = localtime(&player_time);
+        chairs.enqueue(playerID);
         os << "Player " << playerID << " captured a chair at " << put_time(player_ptm,"%X") << ".\n";
         cout << os.str();
     }
     else
     {
+        // eliminated[playerID] = 1;
         os << "Player " << playerID << " couldn't capture a chair.\n";
         cout << os.str();
     }
@@ -54,8 +57,7 @@ void playerThread(int playerID, struct tm *ptm)
 
 int main()
 {
-    // Take input for the number of players
-    // std::cout << "Enter the number of players: ";
+    // Take input for the number of players";
     cout << "Welcome to Musical Chairs game!\n";
     cout << "Enter the number of players in the game:\n"; 
     int numPlayers;
@@ -63,9 +65,20 @@ int main()
 
     // Initialize the queue with the number of players - 1 chairs
     chairs = IntQueueHW6(numPlayers - 1);
-
+    
     vector<thread> threads(numPlayers);
+    // vector<bool> eliminated(numPlayers, false);
+    // eliminated(numPlayers, false);
+
+    for (int i = 0; i < numPlayers; i++)
+    {
+        IDofPlayer.push_back(i);
+    }
+
+    // static vector<thread> threads(numPlayers);
     cout << "Game Start!\n";
+    int copyNumPlayers = numPlayers;
+    // while (copyNumPlayers > 1)
     while (numPlayers > 1)
     {
         // // Display current time
@@ -85,27 +98,47 @@ int main()
         // Start player threads
         for (int i = 0; i < numPlayers; i++)
         {
-            threads[i] = thread(playerThread, i, ptm);
+            // if (eliminated[i] == 0) // Skip eliminated players
+            // { 
+            //     threads[i] = thread(playerThread, i, ptm);
+            // }
+            threads[i] = thread(playerThread, IDofPlayer[i], ptm);
         }
 
         // Join player threads
         for (int i = 0; i < numPlayers; i++)
         {
-            threads[i].join();
+            if (threads[i].joinable())
+            { threads[i].join(); }
         }
 
+        // IntQueueHW6 tempChairs = chairs;
         // Display the IDs of players who captured a chair
         cout << "Remaining players are as follows: ";
-        while (!chairs.isEmpty())
+        // while (!chairs.isEmpty())
+        // {
+        //     int playerID;
+        //     chairs.dequeue(playerID);
+        //     cout << playerID << " ";
+        // }
+        // cout << endl;
+        for (int id : eliminated)
         {
-            int playerID;
-            chairs.dequeue(playerID);
-            cout << playerID << " ";
+            cout << id << " ";
         }
         cout << endl;
 
+        IDofPlayer = eliminated;
+        eliminated.clear();
+
         // Eliminate a player
+        // copyNumPlayers -= 1;
         numPlayers -= 1;
+
+        // // Identify the player who couldn't capture a chair and mark them as eliminated
+        // int eliminated_player_id;
+        // tempChairs.dequeue(eliminated_player_id);
+        // eliminated[eliminated_player_id] = true;
 
         // Decrease the number of chairs by one
         chairs = IntQueueHW6(numPlayers - 1);
@@ -115,9 +148,7 @@ int main()
 
     // try to dequeue te chairs and see if you can get the winner
     int winnerID = -1;
-    // chairs.dequeue(winnerID);
-    // chairs.enqueue(winnerID); // ???? trying to enqueue a full queue???
-    // chairs.dequeue(winnerID);
+    winnerID = IDofPlayer[0];
     cout << "Winner is Player " << winnerID << "!\n";
 
     return 0;
