@@ -1,9 +1,9 @@
 /*
-To implement this program, we will need to:
+The purpose of the program:
 - Create a queue object using the IntQueueHW6 class to represent the chairs.
 - Prompt the user for the number of players and create the corresponding number of threads.
 - Implement a thread function where each player thread tries to enqueue its ID to the queue using mutex locks.
-- Synchronize the start time for all players using sleep_until.
+- Synchronize the start time for all players using `sleep_until`.
 - Keep track of the players who successfully capture a chair in each round and eliminate the player who failed.
 - Decrement the number of chairs for each round.
 - Join the threads properly after each round.
@@ -26,84 +26,44 @@ using namespace std;
 // Global variables
 IntQueueHW6 chairs(0);  // Queue representing the chairs
 mutex mtx;  // Mutex for synchronization
-vector<int> eliminated; // For checking elimination status of each player
-vector<int> IDofPlayer;
+vector<int> notEliminated; // For checking elimination status of each player
+vector<int> IDofPlayer; // For having ID's of players in check
 
 // Thread function for each player
-void playerThread(int playerID, struct tm *ptm)
-{
-    // this_thread::sleep_until(std::chrono::system_clock::now() + std::chrono::seconds(2));
-    this_thread::sleep_until(chrono::system_clock::from_time_t(mktime(ptm)));
-    mtx.lock();
-    ostringstream os;
-    if (!chairs.isFull())
-    {
-        // eliminated[playerID] = 0;
-        eliminated.push_back(playerID);
-        time_t player_time = chrono::system_clock::to_time_t (chrono::system_clock::now());  //gets the current time
-        struct tm *player_ptm = localtime(&player_time);
-        chairs.enqueue(playerID);
-        os << "Player " << playerID << " captured a chair at " << put_time(player_ptm,"%X") << ".\n";
-        cout << os.str();
-    }
-    else
-    {
-        // eliminated[playerID] = 1;
-        os << "Player " << playerID << " couldn't capture a chair.\n";
-        cout << os.str();
-    }
-    mtx.unlock();
-}
+void playerThread(int playerID, struct tm *ptm); 
 
 int main()
 {
-    // Take input for the number of players";
+    // Prompt the beginning of the game
     cout << "Welcome to Musical Chairs game!\n";
     cout << "Enter the number of players in the game:\n"; 
-    int numPlayers;
-    cin >> numPlayers;
+    int numPlayers; cin >> numPlayers;
 
-    // Initialize the queue with the number of players - 1 chairs
-    chairs = IntQueueHW6(numPlayers - 1);
-    
-    vector<thread> threads(numPlayers);
-    // vector<bool> eliminated(numPlayers, false);
-    // eliminated(numPlayers, false);
+    chairs = IntQueueHW6(numPlayers - 1); // Initialize the queue for chairs
+    vector<thread> threads(numPlayers); // Initialize the thread for players
 
     for (int i = 0; i < numPlayers; i++)
-    {
-        IDofPlayer.push_back(i);
-    }
+    { IDofPlayer.push_back(i); } // Add all ID's in the beginning
 
-    // static vector<thread> threads(numPlayers);
     cout << "Game Start!\n";
-    int copyNumPlayers = numPlayers;
-    // while (copyNumPlayers > 1)
-    while (numPlayers > 1)
+    while (numPlayers > 1) // The game shall be played until 2 players remaining
     {
-        // // Display current time
-        time_t current_time = chrono::system_clock::to_time_t (chrono::system_clock::now());  //gets the current time
+        // Display current time
+        time_t current_time = chrono::system_clock::to_time_t (chrono::system_clock::now());
         struct tm *ptm = localtime(&current_time);
-        cout << "\nTime is now " << put_time(ptm,"%X") << endl;  //displaying the time
+        cout << "\nTime is now " << put_time(ptm,"%X") << endl; 
         ptm->tm_sec += 2;
 
-        // Handle minute overflow by incrementing the minute and resetting the seconds
+        // Handle minute overflow
         if (ptm->tm_sec >= 60)
         {
-            //cout << "\tsecond was greater equal to 60.\n";
             ptm->tm_sec %= 60;
             ptm->tm_min++;
         }
          
         // Start player threads
         for (int i = 0; i < numPlayers; i++)
-        {
-            // if (eliminated[i] == 0) // Skip eliminated players
-            // { 
-            //     threads[i] = thread(playerThread, i, ptm);
-            // }
-            threads[i] = thread(playerThread, IDofPlayer[i], ptm);
-        }
+        { threads[i] = thread(playerThread, IDofPlayer[i], ptm); }
 
         // Join player threads
         for (int i = 0; i < numPlayers; i++)
@@ -112,44 +72,45 @@ int main()
             { threads[i].join(); }
         }
 
-        // IntQueueHW6 tempChairs = chairs;
         // Display the IDs of players who captured a chair
         cout << "Remaining players are as follows: ";
-        // while (!chairs.isEmpty())
-        // {
-        //     int playerID;
-        //     chairs.dequeue(playerID);
-        //     cout << playerID << " ";
-        // }
-        // cout << endl;
-        for (int id : eliminated)
-        {
-            cout << id << " ";
-        }
+        for (int id : notEliminated)
+        { cout << id << " "; }
         cout << endl;
 
-        IDofPlayer = eliminated;
-        eliminated.clear();
-
-        // Eliminate a player
-        // copyNumPlayers -= 1;
+        // Reduce the player count for next round
+        IDofPlayer = notEliminated;
+        notEliminated.clear();
         numPlayers -= 1;
 
-        // // Identify the player who couldn't capture a chair and mark them as eliminated
-        // int eliminated_player_id;
-        // tempChairs.dequeue(eliminated_player_id);
-        // eliminated[eliminated_player_id] = true;
-
-        // Decrease the number of chairs by one
-        chairs = IntQueueHW6(numPlayers - 1);
+        chairs = IntQueueHW6(numPlayers - 1); // Decrease the number of chairs by one
     }
-    cout << "\nGame over!\n";
-    // cout << "Winner is Player " << currentPlayerID << "!\n";
 
-    // try to dequeue te chairs and see if you can get the winner
-    int winnerID = -1;
-    winnerID = IDofPlayer[0];
-    cout << "Winner is Player " << winnerID << "!\n";
+    // The winner is the first player in the list of ID's
+    int winnerID = IDofPlayer[0];
+    cout << "\nGame over!\nWinner is Player " << winnerID << "!\n";
 
     return 0;
+}
+
+void playerThread(int playerID, struct tm *ptm)
+{
+    this_thread::sleep_until(chrono::system_clock::from_time_t(mktime(ptm))); // Sleep before mutex for competition
+    mtx.lock();
+    ostringstream os; // For more secure printing
+    if (!chairs.isFull())
+    {
+        notEliminated.push_back(playerID); // Update the list of players still in game
+        time_t player_time = chrono::system_clock::to_time_t (chrono::system_clock::now());
+        struct tm *player_ptm = localtime(&player_time);
+        chairs.enqueue(playerID); // Assign the player to a chair
+        os << "Player " << playerID << " captured a chair at " << put_time(player_ptm,"%X") << ".\n";
+        cout << os.str();
+    }
+    else
+    {
+        os << "Player " << playerID << " couldn't capture a chair.\n";
+        cout << os.str();
+    }
+    mtx.unlock();
 }
